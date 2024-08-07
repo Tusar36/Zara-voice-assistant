@@ -8,11 +8,11 @@ import subprocess
 import time
 import pyautogui
 import serial 
-
+import os
 
 
 recognizer = sr.Recognizer()
-engine = pyttsx3.init("sapi5")
+engine = pyttsx3.init("spi5")
 voices = engine.getProperty('voices')
 engine.setProperty('voice',voices[1].id) 
 
@@ -24,7 +24,7 @@ wake = False
 chatStr =""
 
 try:
-    port = serial.Serial("/dev/ttyACM0", 9600)
+    port = serial.Serial("COM5", 9600)
     print("Physical body, connected.")
 except:
     print("Unable to connect to my physical body")
@@ -64,9 +64,9 @@ def speak(text):
 def fetchData_wolframalpha(query,url,app_id):
     params = {
         'input': query,
-        'format': 'plaintext',  # Choose the format you need (e.g., plaintext, image, etc.)
-        'output': 'JSON',       # Output format can be XML or JSON
-        'app_id': app_id         # Your WolframAlpha API key
+        'format': 'plaintext',  
+        'output': 'JSON',       
+        'app_id': app_id         
     }
     response = requests.get(url, params=params)
 
@@ -151,7 +151,7 @@ if __name__ == '__main__':
             command = listen()
             if 'wake up'.lower() in command.lower():
                 speak('Starting Zara AI')
-                port(b'h')
+                # port.write(b'h')
                 speak('Listning')
                 wake = True
 
@@ -161,12 +161,12 @@ if __name__ == '__main__':
 
                 if "hello".lower() in input.lower():
                     speak('Hello there, I am zara at your service')
-                    port.write(b'h')
+                    # port.write(b'h')
 
                 # description
                 elif 'describe yourself' in input.lower():
                     speak('Hello! I’m Zara, your AI voice assistant designed by Tusar to make your life easier. Powered by Python and Arduino, I can help with tasks like opening YouTube, playing music, answering questions, and chatting with you. Currently, my physical movements are limited to moving my hands and head, but I can be enhanced to include more features like home automation and advanced tasks with Arduino. Essentially, I use Python to understand and execute your voice commands, while Arduino controls my physical movements, making me a versatile and interactive assistant.')  
-                    port.write(b'h')
+                    # port.write(b'h')
 
                 # ai promt 
                 elif "answer this".lower() in input.lower():
@@ -180,18 +180,24 @@ if __name__ == '__main__':
                             speak('unable to understand your question try again')    
                         else:
                             output = chat(question)
-                            port.write(b'h')
-                            time.sleep(11)
-                            port.write(b'p')
+                            # port.write(b'h')
+                            time.sleep(1)
+                            # port.write(b'p')
                             speak(output)
+
+
+                #add statements for diffrnt apps
+                elif 'open notepad' in input.lower():
+                    os.system('notepad.exe')
+
 
                 #Youtube video palyer
                 elif 'play'.lower() in input.lower():
                     search_term = input.split("play")[-1]
                     speak(f'Playing {search_term}')
-                    port.write(b'l')
+                    # port.write(b'l')
                     time.sleep(2)
-                    port.write(b'i')
+                    # port.write(b'i')
                     play_video(search_term)
                     
                 #open chrome (under development)  
@@ -204,22 +210,29 @@ if __name__ == '__main__':
                     for site in sites:
                         if f"Open {site[0]}".lower() in input.lower():
                             speak(f'Opening  {site[0]}')
-                            port.write(b'l')
+                            # port.write(b'l')
                             time.sleep(2)
-                            port.write(b'i')
+                            # port.write(b'i')
                             webbrowser.open(site[1])
+                            found_site = True
+                        if 'open gmail' in input.lower():
+                            speak(f'Opening  gmail')
+                            # port.write(b'l')
+                            time.sleep(2)
+                            # port.write(b'i')
+                            webbrowser.open('https://www.gmail.com/')
                             found_site = True
                     if found_site == False:
                             search_term = input.split("open")[-1]
                             url = f"https://google.com/search?q={search_term}"
                             webbrowser.get().open("https://google.com/")
                             time.sleep(2)
-                            port.write(b'l')
+                            # port.write(b'l')
                             pyautogui.write(search_term,0.2)
                             pyautogui.press('enter')
                             speak(f'Here is what I found for {search_term} on google')
                             time.sleep(1)  
-                            port.write(b'i')
+                            # port.write(b'i')
 
                 #searching for items on google
                 elif "search for".lower() in input.lower():
@@ -227,11 +240,11 @@ if __name__ == '__main__':
                     url = f"https://google.com/search?q={search_term}"
                     webbrowser.get().open("https://google.com")
                     time.sleep(5)
-                    port.write(b'l')
+                    # port.write(b'l')
                     pyautogui.write(search_term,0.1)
                     pyautogui.press('enter')
                     speak(f'Here is what I found for {search_term} on google')
-                    port.write(b'i')
+                    # port.write(b'i')
 
                 # for wikipedia information
                 elif 'summarise'.lower() in input.lower():
@@ -257,7 +270,7 @@ if __name__ == '__main__':
                         else:
                             res = chat(query,question=False)
                             speak(res)
-                            port.write(b'u')
+                            # port.write(b'u')
                
                 #get news
                 elif 'get news'.lower() in input.lower():
@@ -268,15 +281,50 @@ if __name__ == '__main__':
                     else:
                         for i in res:
                             speak(i)    
+
                 elif 'minimise window' in input.lower():
                     pyautogui.hotkey('win','down')
+
+                elif 'maximise window' in input.lower():
+                    pyautogui.hotkey('win','up')
+
+                elif 'move window left' in input.lower():
+                    pyautogui.hotkey('win','left')
+
+                elif 'move window right' in input.lower():
+                    pyautogui.hotkey('win','right')
+
+                elif 'close window' in input.lower():
+                    pyautogui.hotkey('ctrl','w')
+
                 #exit command
                 elif 'exit'.lower() in input.lower():
                     speak('Exiting Zara Ai')
                     wake = False
                     break
 
+                elif "start voice typing" in input.lower():
+                    speak("Voice typing started")
+                    while True:
+                            command = listen()
+                            if 'could not understand the audio' == command.lower():
+                                speak('cant understand')
+                                continue   
+                         
+                            if 'exit voice typing' == command.lower():
+                                speak('exiting voice typing')
+                                break
+                            else:
+                                words = command.split()
+                                for items in words:
+                                    if items.lower() == 'enter':
+                                        pyautogui.press('enter')
+                                    elif items.lower() == 'backspace':
+                                        pyautogui.press('backspace')
+                                    else:
+                                        pyautogui.write(items)    
+
                 elif 'Could not understand the audio'.lower() == input.lower():
                     speak(input+" try again")
-                    print(input)    
-                
+                    print(input)
+
